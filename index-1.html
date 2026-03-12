@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ViksitLearn – AP Digital Inclusion Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#060d1f;--surface:#0d1a33;--surface2:#112244;--surface3:#162d55;
+  --accent:#00d4aa;--accent2:#ff6b35;--accent3:#7c5cbf;
+  --text:#e8f0ff;--muted:#7a8aaa;--border:#1e3055;
+  --success:#00d4aa;--warning:#ff9f43;--danger:#ff5e5e;
+  --card-glow:0 0 30px rgba(0,212,170,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+
+/* BG ORBS */
+.bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.15;}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,#00d4aa,transparent);top:-200px;right:-100px;animation:f1 14s ease-in-out infinite;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,#7c5cbf,transparent);bottom:-100px;left:-100px;animation:f2 17s ease-in-out infinite;}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,#ff6b35,transparent);top:40%;left:30%;animation:f3 20s ease-in-out infinite;}
+@keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,30px)}}
+@keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
+@keyframes f3{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,20px)}}
+
+.page{position:relative;z-index:1;}
+
+
+
+/* ── DASHBOARD ── */
+.dashboard{display:none;min-height:100vh;}
+.sidebar{position:fixed;top:0;left:0;width:256px;height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:1.5rem;border-bottom:1px solid var(--border);}
+.sidebar-logo .logo-name{font-size:1.2rem;font-weight:800;background:linear-gradient(90deg,var(--accent),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sidebar-logo .logo-sub{font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;}
+.nav-section{padding:1rem .75rem;flex:1;overflow-y:auto;}
+.nav-label{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.5rem .75rem;margin-bottom:.25rem;}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.7rem .75rem;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--muted);font-size:.88rem;font-weight:500;margin-bottom:2px;border-left:3px solid transparent;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,rgba(0,212,170,.12),rgba(124,92,191,.08));color:var(--accent);border-left-color:var(--accent);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;}
+.sidebar-user{padding:1rem;border-top:1px solid var(--border);}
+.user-mini{display:flex;align-items:center;gap:.75rem;}
+.user-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#000;flex-shrink:0;}
+.user-mini-info{flex:1;min-width:0;}
+.user-mini-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-mini-role{font-size:.68rem;color:var(--muted);}
+
+.main{margin-left:256px;padding:2rem;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.topbar-title{font-size:1.5rem;font-weight:800;}
+.topbar-right{display:flex;align-items:center;gap:1rem;}
+.sync-badge{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border);padding:.5rem 1rem;border-radius:10px;font-size:.78rem;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1.2rem;margin-bottom:2rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--sl,linear-gradient(90deg,var(--accent),var(--accent3)));}
+.stat-card .stat-icon{font-size:1.8rem;margin-bottom:.6rem;}
+.stat-card .stat-val{font-size:2.2rem;font-weight:800;font-family:'Space Mono',monospace;}
+.stat-card .stat-label{font-size:.72rem;color:var(--muted);margin-top:.2rem;text-transform:uppercase;letter-spacing:.05em;}
+.stat-card .stat-sub{font-size:.72rem;color:var(--accent);margin-top:.4rem;}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
+.section-title{font-size:1.05rem;font-weight:700;}
+.section-action{background:transparent;border:1px solid var(--border);border-radius:8px;padding:.35rem .85rem;color:var(--muted);cursor:pointer;font-size:.78rem;font-family:'Sora',sans-serif;transition:all .2s;}
+.section-action:hover{border-color:var(--accent);color:var(--accent);}
+
+/* COURSE CARDS */
+.courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.2rem;}
+.course-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;}
+.course-card:hover{transform:translateY(-5px);box-shadow:0 16px 48px rgba(0,0,0,.35);border-color:var(--accent);}
+.course-thumb{height:120px;display:flex;align-items:center;justify-content:center;font-size:2.8rem;position:relative;}
+.course-tag{position:absolute;top:10px;right:10px;border-radius:6px;padding:.18rem .55rem;font-size:.68rem;font-weight:700;font-family:'Space Mono',monospace;border:1px solid;}
+.tag-offline{background:rgba(0,212,170,.1);border-color:var(--accent);color:var(--accent);}
+.tag-syncing{background:rgba(255,159,67,.1);border-color:var(--warning);color:var(--warning);}
+.course-body{padding:1.2rem;}
+.course-title{font-size:.93rem;font-weight:700;margin-bottom:.35rem;line-height:1.35;}
+.course-meta{font-size:.72rem;color:var(--muted);margin-bottom:.8rem;}
+.progress-bar{height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width .6s ease;}
+.progress-label{font-size:.68rem;color:var(--muted);margin-top:.35rem;display:flex;justify-content:space-between;}
+.course-open-btn{margin-top:.9rem;width:100%;padding:.55rem;background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);border-radius:8px;color:var(--accent);font-family:'Sora',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.course-open-btn:hover{background:rgba(0,212,170,.2);}
+
+/* ── COURSE DETAIL PAGE ── */
+.course-detail{display:none;}
+.course-detail.active{display:block;animation:fadeIn .35s ease;}
+.back-btn{display:inline-flex;align-items:center;gap:.5rem;background:transparent;border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;color:var(--muted);cursor:pointer;font-family:'Sora',sans-serif;font-size:.85rem;margin-bottom:1.5rem;transition:all .2s;}
+.back-btn:hover{border-color:var(--accent);color:var(--accent);}
+.course-hero{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;display:flex;gap:2rem;align-items:center;}
+.course-hero-icon{font-size:4rem;flex-shrink:0;}
+.course-hero-info h2{font-size:1.6rem;font-weight:800;margin-bottom:.4rem;}
+.course-hero-info p{color:var(--muted);font-size:.88rem;line-height:1.6;max-width:600px;}
+.course-hero-meta{display:flex;gap:1rem;margin-top:.8rem;flex-wrap:wrap;}
+.meta-pill{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .75rem;font-size:.75rem;color:var(--muted);}
+.meta-pill span{color:var(--text);font-weight:600;}
+.course-hero-progress{margin-top:1rem;}
+.hero-pct{font-size:.78rem;color:var(--muted);margin-bottom:.4rem;display:flex;justify-content:space-between;}
+.hero-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.hero-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width .8s ease;}
+
+/* TOPICS LIST */
+.topics-container{display:grid;grid-template-columns:1fr;gap:.75rem;}
+.topic-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:1rem;padding:1.1rem 1.3rem;cursor:pointer;transition:all .2s;}
+.topic-row:hover{border-color:var(--accent);background:var(--surface2);}
+.topic-num{width:36px;height:36px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;flex-shrink:0;color:var(--muted);}
+.topic-num.done{background:rgba(0,212,170,.15);border-color:var(--accent);color:var(--accent);}
+.topic-num.inprog{background:rgba(255,159,67,.15);border-color:var(--warning);color:var(--warning);}
+.topic-info{flex:1;}
+.topic-title{font-size:.92rem;font-weight:700;margin-bottom:.25rem;}
+.topic-desc{font-size:.75rem;color:var(--muted);}
+.topic-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+.topic-type-badge{font-size:.65rem;font-weight:700;font-family:'Space Mono',monospace;border-radius:5px;padding:.18rem .5rem;border:1px solid;}
+.type-reading{border-color:var(--accent3);color:#a07df0;background:rgba(124,92,191,.1);}
+.type-video{border-color:var(--accent2);color:var(--accent2);background:rgba(255,107,53,.1);}
+.type-quiz{border-color:var(--warning);color:var(--warning);background:rgba(255,159,67,.1);}
+.type-assignment{border-color:var(--danger);color:var(--danger);background:rgba(255,94,94,.1);}
+.topic-duration{font-size:.72rem;color:var(--muted);}
+.topic-status-icon{font-size:1.1rem;}
+.free-badge{font-size:.62rem;font-weight:700;background:rgba(0,212,170,.15);border:1px solid var(--accent);color:var(--accent);border-radius:5px;padding:.1rem .4rem;}
+
+/* ── TOPIC READER MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(6,13,31,.88);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:860px;overflow:hidden;animation:slideUp .4s ease;margin:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.8rem;border-bottom:1px solid var(--border);background:var(--surface2);}
+.modal-header-left h3{font-size:1.05rem;font-weight:700;margin-bottom:.2rem;}
+.modal-header-left .modal-meta{font-size:.75rem;color:var(--muted);}
+.modal-close{background:transparent;border:1px solid var(--border);border-radius:8px;width:34px;height:34px;cursor:pointer;color:var(--muted);font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.modal-close:hover{border-color:var(--danger);color:var(--danger);}
+.modal-progress-bar{height:3px;background:var(--border);}
+.modal-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width .3s;}
+.modal-body{padding:1.8rem;max-height:60vh;overflow-y:auto;}
+.modal-body h2{font-size:1.4rem;font-weight:800;margin-bottom:1rem;color:var(--text);}
+.modal-body h3{font-size:1rem;font-weight:700;margin:1.3rem 0 .6rem;color:var(--accent);}
+.modal-body p{color:#c8d8f0;font-size:.9rem;line-height:1.75;margin-bottom:.8rem;}
+.modal-body ul,.modal-body ol{padding-left:1.5rem;margin-bottom:.8rem;}
+.modal-body li{color:#c8d8f0;font-size:.88rem;line-height:1.7;margin-bottom:.3rem;}
+.modal-body pre{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1rem;margin:.8rem 0;overflow-x:auto;}
+.modal-body code{font-family:'Space Mono',monospace;font-size:.78rem;color:#a8f0e0;line-height:1.6;white-space:pre;}
+.modal-body strong{color:var(--text);}
+.modal-body em{color:var(--accent3);}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.8rem;border-top:1px solid var(--border);background:var(--surface2);gap:1rem;}
+.modal-footer-left{font-size:.8rem;color:var(--muted);}
+.modal-footer-right{display:flex;gap:.75rem;}
+.btn-modal{padding:.55rem 1.3rem;border-radius:10px;font-family:'Sora',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid;}
+.btn-prev{background:transparent;border-color:var(--border);color:var(--muted);}
+.btn-prev:hover{border-color:var(--text);color:var(--text);}
+.btn-complete{background:linear-gradient(135deg,var(--accent),#00b894);border-color:transparent;color:#000;}
+.btn-complete:hover{box-shadow:0 4px 16px rgba(0,212,170,.35);}
+.btn-complete:disabled{opacity:.5;cursor:not-allowed;}
+.btn-next{background:var(--surface3);border-color:var(--border);color:var(--text);}
+.btn-next:hover{border-color:var(--accent);color:var(--accent);}
+
+/* LOADING SPINNER */
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-block{text-align:center;padding:3rem;color:var(--muted);}
+.loading-block .spinner{width:36px;height:36px;border-width:3px;margin-bottom:1rem;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:.85rem 1rem;font-size:.84rem;border-bottom:1px solid rgba(30,48,85,.5);}
+tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:6px;font-size:.68rem;font-weight:700;}
+.badge-success{background:rgba(0,212,170,.15);color:var(--accent);}
+.badge-warn{background:rgba(255,159,67,.15);color:var(--warning);}
+.badge-info{background:rgba(124,92,191,.15);color:#a07df0;}
+
+/* PROFILE */
+.profile-hero{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:2rem;}
+.profile-avatar-big{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:800;color:#000;flex-shrink:0;}
+.profile-info h2{font-size:1.5rem;font-weight:800;}
+.role-tag{display:inline-block;margin-top:.25rem;background:rgba(0,212,170,.15);color:var(--accent);border-radius:6px;padding:.18rem .7rem;font-size:.72rem;font-weight:700;}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.profile-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;}
+.profile-section h3{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:1rem;}
+.profile-field{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;}
+.profile-field:last-child{border-bottom:none;}
+.profile-field-label{color:var(--muted);}
+.btn-sm{padding:.4rem .9rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Sora',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm.pri{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+.btn-sm.pri:hover{box-shadow:0 4px 16px rgba(0,212,170,.3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:.85rem 1.4rem;font-size:.88rem;font-weight:600;color:var(--accent);z-index:9999;transform:translateY(100px);opacity:0;transition:all .4s;box-shadow:0 8px 32px rgba(0,212,170,.2);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-color:var(--danger);color:var(--danger);}
+
+/* CERT MODAL */
+.cert-overlay{position:fixed;inset:0;background:rgba(6,13,31,.92);z-index:600;display:none;align-items:center;justify-content:center;padding:2rem;}
+.cert-overlay.open{display:flex;}
+.cert-box{background:var(--surface);border:2px solid var(--accent);border-radius:24px;padding:3rem;text-align:center;max-width:480px;animation:slideUp .5s ease;box-shadow:0 0 60px rgba(0,212,170,.25);}
+.cert-emoji{font-size:4rem;margin-bottom:1rem;}
+.cert-box h2{font-size:1.6rem;font-weight:800;margin-bottom:.5rem;}
+.cert-box p{color:var(--muted);margin-bottom:1.5rem;}
+.cert-close{padding:.65rem 2rem;background:linear-gradient(135deg,var(--accent),#00b894);border:none;border-radius:12px;color:#000;font-family:'Sora',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div class="dashboard" id="dashPage" style="display:block;">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div style="font-size:1.5rem;margin-bottom:.3rem;">🎓</div>
+      <div class="logo-name">ViksitLearn</div>
+      <div class="logo-sub">AP DIGITAL INCLUSION · 2047</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="showPanel('home',this)"><span class="nav-icon">🏠</span>Dashboard</div>
+      <div class="nav-item" onclick="showPanel('courses',this)"><span class="nav-icon">📚</span>My Courses</div>
+      <div class="nav-item" onclick="showPanel('sync',this)"><span class="nav-icon">🔄</span>Sync Status</div>
+      <div class="nav-item" onclick="showPanel('skills',this)"><span class="nav-icon">⚡</span>Skills Tracker</div>
+      <div class="nav-label" style="margin-top:1rem;">Network</div>
+      <div class="nav-item" onclick="showPanel('network',this)"><span class="nav-icon">🌐</span>DTN Network Map</div>
+      <div class="nav-item" onclick="showPanel('workforce',this)"><span class="nav-icon">💼</span>Workforce Jobs</div>
+      <div class="nav-label" style="margin-top:1rem;">Account</div>
+      <div class="nav-item" onclick="showPanel('profile',this)"><span class="nav-icon">👤</span>My Profile</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-mini">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
+        <div class="user-mini-info">
+          <div class="user-mini-name" id="sidebarName">User</div>
+          <div class="user-mini-role" id="sidebarRole">Learner</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="panelTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="sync-badge"><div class="sync-dot"></div><span>DTN Sync Active</span></div>
+        
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="panel active" id="panel-home">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon">📘</div><div class="stat-val" id="statEnrolled">—</div><div class="stat-label">Enrolled Courses</div><div class="stat-sub">Active learner</div></div>
+        <div class="stat-card" style="--sl:linear-gradient(90deg,#ff6b35,#ff9f43)"><div class="stat-icon">⚡</div><div class="stat-val" id="statAvg">—</div><div class="stat-label">Avg Completion</div><div class="stat-sub" style="color:var(--accent2)" id="statAvgSub">Loading…</div></div>
+        <div class="stat-card" style="--sl:linear-gradient(90deg,#7c5cbf,#a07df0)"><div class="stat-icon">🏅</div><div class="stat-val" id="statCerts">—</div><div class="stat-label">Certificates</div><div class="stat-sub" style="color:#a07df0">Viksit Bharat Certified</div></div>
+        <div class="stat-card" style="--sl:linear-gradient(90deg,#00b894,#00cec9)"><div class="stat-icon">🔄</div><div class="stat-val">98%</div><div class="stat-label">Content Synced</div><div class="stat-sub">Offline-ready ✓</div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Continue Learning</div>
+        <button class="section-action" onclick="showPanel('courses',document.querySelectorAll('.nav-item')[1])">View All →</button>
+      </div>
+      <div class="courses-grid" id="homeCourses">
+        <div class="loading-block"><div class="spinner"></div><div>Loading courses…</div></div>
+      </div>
+      <div class="section-header" style="margin-top:2rem;"><div class="section-title">Recent Activity</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <table><thead><tr><th>Topic</th><th>Course</th><th>When</th><th>Status</th></tr></thead>
+        <tbody id="activityTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem;">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- COURSES LIST -->
+    <div class="panel" id="panel-courses">
+      <!-- Course List View -->
+      <div id="coursesListView">
+        <div class="courses-grid" id="allCoursesGrid">
+          <div class="loading-block"><div class="spinner"></div><div>Loading courses…</div></div>
+        </div>
+      </div>
+      <!-- Course Detail View -->
+      <div class="course-detail" id="courseDetailView">
+        <button class="back-btn" onclick="closeCourseDetail()">← Back to Courses</button>
+        <div class="course-hero" id="courseHero"></div>
+        <div class="section-header"><div class="section-title">📖 Course Topics</div><span id="topicsProgress" style="font-size:.8rem;color:var(--muted);"></span></div>
+        <div class="topics-container" id="topicsContainer">
+          <div class="loading-block"><div class="spinner"></div><div>Loading topics…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYNC -->
+    <div class="panel" id="panel-sync">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div class="section-title">🔄 Adaptive Content Synchronization</div>
+          <span class="badge badge-success">DTN Active</span>
+        </div>
+        <div id="syncRows"><div class="loading-block" style="padding:1.5rem;"><div class="spinner"></div></div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;">
+        <div class="section-title" style="margin-bottom:1rem;">⚙️ Sync Configuration</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <div class="form-group"><label>Sync Mode</label><select><option>Adaptive Priority Sync</option><option>Manual</option><option>Store-and-Forward</option></select></div>
+            <div class="form-group"><label>Content Priority</label><select><option>Incomplete First</option><option>Newest First</option><option>All Equal</option></select></div>
+          </div>
+          <div>
+            <div class="form-group"><label>Network Type</label><select><option>Auto-detect</option><option>Wi-Fi Only</option><option>DTN Relay</option><option>Bluetooth P2P</option></select></div>
+            <div class="form-group"><label>Max Cache</label><select><option>5 GB</option><option>10 GB</option><option>20 GB</option><option>Unlimited</option></select></div>
+          </div>
+        </div>
+        <button class="btn-primary" style="max-width:200px;" onclick="showToast('⚙️ Sync settings saved!')">Save Settings</button>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="panel" id="panel-skills">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:1rem;margin-bottom:2rem;" id="skillsGrid">
+        <div class="loading-block"><div class="spinner"></div></div>
+      </div>
+      <div class="section-header"><div class="section-title">🏅 Certificates Earned</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <table><thead><tr><th>Certificate</th><th>Issued By</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody id="certsTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem;">Loading…</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div class="panel" id="panel-network">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div class="section-title">🌐 DTN Network Topology – Live View</div>
+          <span class="badge badge-success">ADAPTIVE ROUTING ON</span>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;height:220px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          <svg width="100%" height="100%" style="position:absolute;inset:0;">
+            <line x1="50%" y1="40%" x2="15%" y2="20%" stroke="#00d4aa" stroke-width="1.5" opacity=".4" stroke-dasharray="6,4"/>
+            <line x1="50%" y1="40%" x2="82%" y2="22%" stroke="#00d4aa" stroke-width="1.5" opacity=".4"/>
+            <line x1="50%" y1="40%" x2="12%" y2="65%" stroke="#ff9f43" stroke-width="1.5" opacity=".4" stroke-dasharray="6,4"/>
+            <line x1="50%" y1="40%" x2="85%" y2="68%" stroke="#00d4aa" stroke-width="1.5" opacity=".4"/>
+            <line x1="50%" y1="40%" x2="50%" y2="82%" stroke="#ff6b35" stroke-width="1.5" opacity=".35" stroke-dasharray="4,3"/>
+            <line x1="50%" y1="40%" x2="28%" y2="60%" stroke="#ff9f43" stroke-width="1.5" opacity=".35" stroke-dasharray="6,4"/>
+            <line x1="50%" y1="40%" x2="68%" y2="63%" stroke="#ff9f43" stroke-width="1.5" opacity=".35" stroke-dasharray="6,4"/>
+          </svg>
+          <div style="position:absolute;top:30%;left:46%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,212,170,.2);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent);font-size:.65rem;font-weight:700;text-align:center;">🏛️<br>Hub</div>
+          <div style="position:absolute;top:10%;left:10%;width:44px;height:44px;border-radius:50%;background:rgba(124,92,191,.2);border:2px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#a07df0;text-align:center;">👤<br>L1</div>
+          <div style="position:absolute;top:12%;left:78%;width:44px;height:44px;border-radius:50%;background:rgba(124,92,191,.2);border:2px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#a07df0;text-align:center;">👤<br>L2</div>
+          <div style="position:absolute;top:55%;left:7%;width:40px;height:40px;border-radius:50%;background:rgba(255,159,67,.2);border:2px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--warning);text-align:center;">📴<br>L3</div>
+          <div style="position:absolute;top:58%;left:81%;width:44px;height:44px;border-radius:50%;background:rgba(124,92,191,.2);border:2px solid var(--accent3);display:flex;align-items:center;justify-content:center;font-size:.62rem;color:#a07df0;text-align:center;">👤<br>L4</div>
+          <div style="position:absolute;top:50%;left:24%;width:40px;height:40px;border-radius:50%;background:rgba(255,159,67,.2);border:2px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--warning);text-align:center;">📴<br>L5</div>
+          <div style="position:absolute;top:53%;left:64%;width:40px;height:40px;border-radius:50%;background:rgba(255,159,67,.2);border:2px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--warning);text-align:center;">📴<br>L6</div>
+          <div style="position:absolute;bottom:12px;left:46%;transform:translateX(-50%);width:52px;height:42px;border-radius:8px;background:rgba(255,107,53,.2);border:2px solid var(--accent2);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--accent2);text-align:center;">🚌<br>DTN Bus</div>
+        </div>
+        <div style="display:flex;gap:1.5rem;margin-top:1rem;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);"><div style="width:9px;height:9px;border-radius:50%;background:var(--accent)"></div>Hub Node</div>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);"><div style="width:9px;height:9px;border-radius:50%;background:var(--accent3)"></div>Online Learner</div>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);"><div style="width:9px;height:9px;border-radius:50%;background:var(--warning)"></div>Offline Learner (DTN)</div>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted);"><div style="width:9px;height:9px;border-radius:4px;background:var(--accent2)"></div>DTN Relay Bus</div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);"><div class="section-title">Network Statistics</div></div>
+        <table><thead><tr><th>Metric</th><th>Value</th><th>Algorithm</th><th>Status</th></tr></thead><tbody>
+          <tr><td>Active DTN Nodes</td><td>47</td><td>Scalable DTN Routing</td><td><span class="badge badge-success">Optimal</span></td></tr>
+          <tr><td>Content Delivery Rate</td><td>94.2%</td><td>Priority-Based Scheduling</td><td><span class="badge badge-success">High</span></td></tr>
+          <tr><td>Avg Sync Latency</td><td>3.4 min</td><td>Incremental Update Prop.</td><td><span class="badge badge-info">Normal</span></td></tr>
+          <tr><td>Offline Learners Served</td><td>12</td><td>Store-and-Forward Routing</td><td><span class="badge badge-warn">Via Relay</span></td></tr>
+          <tr><td>Cache Hit Rate</td><td>87%</td><td>Context-Aware Prefetching</td><td><span class="badge badge-success">Excellent</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- WORKFORCE -->
+    <div class="panel" id="panel-workforce">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);"><div class="section-title">💼 Job Opportunities – Andhra Pradesh</div></div>
+        <table><thead><tr><th>Position</th><th>Company</th><th>Location</th><th>Match</th><th>Action</th></tr></thead><tbody>
+          <tr><td>React Developer</td><td>TechAP Pvt Ltd</td><td>Visakhapatnam</td><td><span class="badge badge-success">95%</span></td><td><button class="btn-sm pri" onclick="showToast('✅ Applied to React Developer!')">Apply</button></td></tr>
+          <tr><td>Digital Marketer</td><td>GrowthBharat</td><td>Vijayawada</td><td><span class="badge badge-success">82%</span></td><td><button class="btn-sm pri" onclick="showToast('✅ Applied!')">Apply</button></td></tr>
+          <tr><td>Mobile Dev (Flutter)</td><td>AppSolutions AP</td><td>Remote</td><td><span class="badge badge-success">91%</span></td><td><button class="btn-sm pri" onclick="showToast('✅ Applied!')">Apply</button></td></tr>
+          <tr><td>Cybersecurity Analyst</td><td>SecureGov AP</td><td>Hyderabad</td><td><span class="badge badge-warn">68%</span></td><td><button class="btn-sm" onclick="showToast('ℹ️ Complete Cybersecurity course first')">Upskill</button></td></tr>
+          <tr><td>Cloud Engineer</td><td>Infra India</td><td>Tirupati</td><td><span class="badge badge-warn">45%</span></td><td><button class="btn-sm" onclick="showToast('ℹ️ Boost Cloud/DevOps progress')">Upskill</button></td></tr>
+        </tbody></table>
+      </div>
+      <div style="background:rgba(0,212,170,.05);border:1px solid rgba(0,212,170,.2);border-radius:16px;padding:1.5rem;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🎯</div>
+        <div style="font-weight:700;margin-bottom:.3rem;">Viksit Bharat 2047 – Workforce Readiness Score</div>
+        <div id="workforceScore" style="font-size:3rem;font-weight:800;font-family:'Space Mono',monospace;color:var(--accent);">— / 100</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:.5rem;">Complete more courses to unlock opportunities</div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="panel" id="panel-profile">
+      <div class="profile-hero">
+        <div class="profile-avatar-big" id="profileAvatarBig">A</div>
+        <div class="profile-info">
+          <h2 id="profileName">—</h2>
+          <div class="role-tag">Learner · Digital Inclusion Program</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:.5rem;" id="profileJoined">Viksit Bharat 2047</div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-section">
+          <h3>Personal Details</h3>
+          <div class="profile-field"><span class="profile-field-label">Full Name</span><span id="pName">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Email</span><span id="pEmail">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Mobile</span><span id="pPhone">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">District</span><span id="pDistrict">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Category</span><span id="pCategory">—</span></div>
+        </div>
+        <div class="profile-section">
+          <h3>Learning Stats</h3>
+          <div class="profile-field"><span class="profile-field-label">Courses Enrolled</span><span style="color:var(--accent);font-weight:700;" id="ppEnrolled">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Certificates</span><span style="color:var(--accent);font-weight:700;" id="ppCerts">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Avg Completion</span><span style="color:var(--accent);font-weight:700;" id="ppAvg">—</span></div>
+          <div class="profile-field"><span class="profile-field-label">Content Synced</span><span style="color:var(--accent);font-weight:700;">98% offline</span></div>
+        </div>
+      </div>
+      <div style="margin-top:1.2rem;display:flex;gap:.75rem;">
+        <button class="btn-sm pri" onclick="showToast('✏️ Edit profile — coming soon!')">Edit Profile</button>
+        
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════════════════ TOPIC READER MODAL ════════════════ -->
+<div class="modal-overlay" id="topicModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <h3 id="modalTitle">Topic Title</h3>
+        <div class="modal-meta" id="modalMeta">Loading…</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-progress-bar"><div class="modal-progress-fill" id="modalProgressFill" style="width:0%"></div></div>
+    <div class="modal-body" id="modalBody"><div class="loading-block"><div class="spinner"></div><div>Loading content…</div></div></div>
+    <div class="modal-footer">
+      <div class="modal-footer-left" id="modalFooterLeft">Topic 1 of 6</div>
+      <div class="modal-footer-right">
+        <button class="btn-modal btn-prev" id="btnPrev" onclick="navigateTopic(-1)">← Prev</button>
+        <button class="btn-modal btn-complete" id="btnComplete" onclick="markComplete()">✓ Mark Complete</button>
+        <button class="btn-modal btn-next" id="btnNext" onclick="navigateTopic(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ CERTIFICATE MODAL ════════════════ -->
+<div class="cert-overlay" id="certOverlay">
+  <div class="cert-box">
+    <div class="cert-emoji">🏅</div>
+    <h2>Certificate Earned!</h2>
+    <p id="certMsg">Congratulations! You've completed the course.</p>
+    <button class="cert-close" onclick="document.getElementById('certOverlay').classList.remove('open')">🎉 Awesome!</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIG – Flask server URL
+// ══════════════════════════════════════════════════
+const API = 'http://localhost:5000/api';
+
+// ── STATE ──────────────────────────────────────────
+let allCourses    = [];
+let currentCourse = null;
+let currentTopics  = [];
+let currentTopicIdx = 0;
+
+// ── AUTO-LOAD on page open ─────────────────────────
+(async () => {
+  await loadAll();
+})();
+
+// ── API HELPER ──────────────────────────────────────
+async function api(path, opts = {}) {
+  const res  = await fetch(API + path, { headers:{'Content-Type':'application/json'}, ...opts });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD ALL DATA FROM DATABASE
+// ══════════════════════════════════════════════════
+async function loadAll() {
+  try {
+    // Run all API calls in parallel
+    const [dashRes, coursesRes, profileRes, certsRes, jobsRes, networkRes] =
+      await Promise.all([
+        api('/dashboard'),
+        api('/courses'),
+        api('/profile'),
+        api('/certificates'),
+        api('/jobs'),
+        api('/network')
+      ]);
+
+    allCourses = coursesRes.data || [];
+    const d = dashRes.data;
+    const p = profileRes.data;
+    const certs = certsRes.data || [];
+    const jobs  = jobsRes.data  || [];
+    const net   = networkRes.data;
+
+    // ── Sidebar & Profile panel ──
+    const initials = (p.full_name||'AP').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('sidebarAvatar').textContent    = initials;
+    document.getElementById('sidebarName').textContent      = p.full_name    || 'AP Learner';
+    document.getElementById('sidebarRole').textContent      = p.category     || 'Digital Inclusion Program';
+    document.getElementById('profileAvatarBig').textContent = initials;
+    document.getElementById('profileName').textContent      = p.full_name    || 'AP Learner';
+    document.getElementById('profileJoined').textContent    = `Member since ${(p.created_at||'').slice(0,4)} · Viksit Bharat 2047`;
+    document.getElementById('pName').textContent     = p.full_name || '—';
+    document.getElementById('pEmail').textContent    = p.email     || '—';
+    document.getElementById('pPhone').textContent    = p.phone     || '—';
+    document.getElementById('pDistrict').textContent = p.district  || '—';
+    document.getElementById('pCategory').textContent = p.category  || '—';
+
+    // ── Stats ──
+    document.getElementById('statEnrolled').textContent  = d.enrolled_courses;
+    document.getElementById('statAvg').textContent       = d.avg_completion_pct + '%';
+    document.getElementById('statAvgSub').textContent    = '↑ Progress this week';
+    document.getElementById('statCerts').textContent     = d.certificates;
+    document.getElementById('ppEnrolled').textContent    = p.enrolled_courses;
+    document.getElementById('ppCerts').textContent       = p.certificates;
+    document.getElementById('ppAvg').textContent         = p.avg_completion_pct + '%';
+    document.getElementById('workforceScore').textContent= (p.workforce_score||0) + ' / 100';
+
+    // ── Recent Activity ──
+    const tbody = document.getElementById('activityTable');
+    if (d.recent_activity && d.recent_activity.length) {
+      tbody.innerHTML = d.recent_activity.map(r => `
+        <tr>
+          <td>${r.topic}</td>
+          <td>${r.course}</td>
+          <td>${timeSince(r.updated_at)}</td>
+          <td><span class="badge ${r.status==='completed'?'badge-success':r.status==='in_progress'?'badge-warn':'badge-info'}">${r.status.replace('_',' ')}</span></td>
+        </tr>`).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem;">No activity yet — open a course and start learning! 🚀</td></tr>`;
+    }
+
+    // ── Certificates table ──
+    const certBody = document.getElementById('certsTable');
+    if (certs.length) {
+      certBody.innerHTML = certs.map(c => `
+        <tr>
+          <td>${c.icon||'🏅'} ${c.course_title}</td>
+          <td>${c.issued_by||'AP Skill Dev Corp'}</td>
+          <td>${(c.issued_at||'').slice(0,10)}</td>
+          <td><span class="badge badge-success">Verified</span></td>
+        </tr>`).join('');
+    } else {
+      certBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1.5rem;">Complete a course to earn your first certificate 🎓</td></tr>`;
+    }
+
+    // ── Workforce jobs ──
+    const jobBody = document.getElementById('jobsTableBody');
+    if (jobBody) {
+      jobBody.innerHTML = jobs.map(j => `
+        <tr>
+          <td>${j.title}</td>
+          <td>${j.company}</td>
+          <td>${j.location}</td>
+          <td><span class="badge ${j.match>=80?'badge-success':j.match>=50?'badge-warn':'badge-info'}">${j.match}%</span></td>
+          <td><button class="btn-sm ${j.match>=60?'pri':''}" onclick="showToast('${j.match>=60?'✅ Applied to '+j.title+'!':'ℹ️ Upskill first to qualify'}')">
+            ${j.match>=60?'Apply':'Upskill'}
+          </button></td>
+        </tr>`).join('');
+    }
+
+    // ── Network stats ──
+    const netRows = document.getElementById('networkStatsBody');
+    if (netRows && net) {
+      netRows.innerHTML = `
+        <tr><td>Active DTN Nodes</td><td>${net.active_nodes}</td><td>Scalable DTN Routing</td><td><span class="badge badge-success">Optimal</span></td></tr>
+        <tr><td>Content Delivery Rate</td><td>${net.delivery_rate}</td><td>Priority-Based Scheduling</td><td><span class="badge badge-success">High</span></td></tr>
+        <tr><td>Avg Sync Latency</td><td>${net.avg_sync_latency}</td><td>Incremental Update Prop.</td><td><span class="badge badge-info">Normal</span></td></tr>
+        <tr><td>Offline Learners Served</td><td>${net.offline_learners}</td><td>Store-and-Forward Routing</td><td><span class="badge badge-warn">Via Relay</span></td></tr>
+        <tr><td>Cache Hit Rate</td><td>${net.cache_hit_rate}</td><td>Context-Aware Prefetching</td><td><span class="badge badge-success">Excellent</span></td></tr>`;
+    }
+
+    // ── Course cards ──
+    renderCourseCards(allCourses.slice(0,3), 'homeCourses', true);
+    renderCourseCards(allCourses, 'allCoursesGrid', true);
+
+    // ── Sync & Skills panels ──
+    await loadSyncPanel();
+    await loadSkillsPanel();
+
+    showToast('✅ Data loaded from database!');
+
+  } catch(e) {
+    console.warn('Backend offline, using demo data:', e.message);
+    loadDemoData();
+  }
+}
+
+// ── Load Sync panel from DB ─────────────────────────
+async function loadSyncPanel() {
+  try {
+    const res = await api('/sync');
+    const rows = res.data || [];
+    document.getElementById('syncRows').innerHTML = rows.map(c => {
+      const pct = Math.round((c.completed_topics||0)/(c.total_modules||1)*100);
+      const synced = c.sync_status === 'offline';
+      return `
+        <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);">
+          <div style="width:36px;height:36px;border-radius:8px;background:${synced?'rgba(0,212,170,.15)':'rgba(255,159,67,.15)'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${synced?'✅':'⏳'}</div>
+          <div style="flex:1;font-size:.85rem;">
+            <div style="font-weight:600;">${c.icon} ${c.title}</div>
+            <div style="font-size:.72rem;color:var(--muted);">${synced?'Synced · Offline-ready':'Syncing via adaptive DTN node…'}</div>
+          </div>
+          <div style="font-family:'Space Mono',monospace;font-size:.85rem;color:${synced?'var(--accent)':'var(--warning)'};">${synced?pct+'%':Math.floor(40+Math.random()*50)+'%'}</div>
+        </div>`;}).join('');
+  } catch(e) { renderSyncRows(allCourses); }
+}
+
+// ── Load Skills panel from DB ────────────────────────
+async function loadSkillsPanel() {
+  try {
+    const res = await api('/skills');
+    renderSkills(res.data || []);
+  } catch(e) { renderSkills(allCourses); }
+}
+
+// ── DEMO FALLBACK (when backend is offline) ──────────
+function loadDemoData() {
+  allCourses = [
+    {id:1,title:'Full-Stack Web Development',description:'Master React, Node.js and MongoDB.',icon:'💻',color_from:'#0d2438',color_to:'#1a4a6b',sync_status:'offline',duration_hrs:42,total_modules:6,progress_pct:75,completed_topics:4},
+    {id:2,title:'Digital Marketing & SEO',description:'Google Ads, Analytics, SEO strategies.',icon:'📊',color_from:'#1a0d38',color_to:'#3a1a6b',sync_status:'offline',duration_hrs:28,total_modules:6,progress_pct:50,completed_topics:3},
+    {id:3,title:'AI & Machine Learning Basics',description:'Python, TensorFlow and ML.',icon:'🤖',color_from:'#0d2e1a',color_to:'#1a6b3a',sync_status:'syncing',duration_hrs:36,total_modules:6,progress_pct:30,completed_topics:2},
+    {id:4,title:'Mobile App Development',description:'Flutter and React Native.',icon:'📱',color_from:'#2e1a0d',color_to:'#6b3a1a',sync_status:'offline',duration_hrs:30,total_modules:6,progress_pct:88,completed_topics:5},
+    {id:5,title:'Cloud Computing & DevOps',description:'AWS, Docker, Kubernetes.',icon:'☁️',color_from:'#1a2e0d',color_to:'#3a6b1a',sync_status:'offline',duration_hrs:24,total_modules:6,progress_pct:20,completed_topics:1},
+    {id:6,title:'Cybersecurity Fundamentals',description:'Ethical hacking and network security.',icon:'🔒',color_from:'#2e0d1a',color_to:'#6b1a3a',sync_status:'offline',duration_hrs:20,total_modules:6,progress_pct:60,completed_topics:4},
+  ];
+  document.getElementById('sidebarAvatar').textContent    = 'AP';
+  document.getElementById('sidebarName').textContent      = 'AP Learner';
+  document.getElementById('sidebarRole').textContent      = 'Digital Inclusion Program';
+  document.getElementById('profileAvatarBig').textContent = 'AP';
+  document.getElementById('profileName').textContent      = 'AP Learner';
+  document.getElementById('profileJoined').textContent    = 'Viksit Bharat 2047 · Quality Education Policy';
+  document.getElementById('pName').textContent     = 'AP Learner';
+  document.getElementById('pEmail').textContent    = 'learner@viksitlearn.ap.gov.in';
+  document.getElementById('pPhone').textContent    = '+91 XXXXXXXXXX';
+  document.getElementById('pDistrict').textContent = 'Andhra Pradesh';
+  document.getElementById('pCategory').textContent = 'Digital Inclusion Program';
+  document.getElementById('statEnrolled').textContent  = '6';
+  document.getElementById('statAvg').textContent       = '54%';
+  document.getElementById('statAvgSub').textContent    = '↑ 8% this week';
+  document.getElementById('statCerts').textContent     = '1';
+  document.getElementById('ppEnrolled').textContent    = '6';
+  document.getElementById('ppCerts').textContent       = '1';
+  document.getElementById('ppAvg').textContent         = '54%';
+  document.getElementById('workforceScore').textContent= '78 / 100';
+  document.getElementById('activityTable').innerHTML = `
+    <tr><td>Intro to Web Development</td><td>Full-Stack Web Dev</td><td>Today</td><td><span class="badge badge-success">completed</span></td></tr>
+    <tr><td>HTML5 & CSS3 Foundations</td><td>Full-Stack Web Dev</td><td>Today</td><td><span class="badge badge-success">completed</span></td></tr>
+    <tr><td>SEO Fundamentals</td><td>Digital Marketing</td><td>Yesterday</td><td><span class="badge badge-warn">in progress</span></td></tr>
+    <tr><td>Python for Data Science</td><td>AI & ML Basics</td><td>2 days ago</td><td><span class="badge badge-success">completed</span></td></tr>
+    <tr><td>Flutter Widgets & UI</td><td>Mobile App Dev</td><td>3 days ago</td><td><span class="badge badge-success">completed</span></td></tr>`;
+  document.getElementById('certsTable').innerHTML = `
+    <tr><td>🏅 Mobile App Development</td><td>AP Skill Dev Corp</td><td>Jan 2025</td><td><span class="badge badge-success">Verified</span></td></tr>`;
+  renderCourseCards(allCourses.slice(0,3),'homeCourses',true);
+  renderCourseCards(allCourses,'allCoursesGrid',true);
+  renderSyncRows(allCourses);
+  renderSkills(allCourses);
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER HELPERS
+// ══════════════════════════════════════════════════
+function renderCourseCards(courses, containerId, showOpenBtn) {
+  const el = document.getElementById(containerId);
+  if (!courses.length) { el.innerHTML = '<div style="color:var(--muted);padding:2rem;">No courses found.</div>'; return; }
+  el.innerHTML = courses.map(c => `
+    <div class="course-card" onclick="openCourseDetail(${c.id})">
+      <div class="course-thumb" style="background:linear-gradient(135deg,${c.color_from},${c.color_to});">
+        ${c.icon}
+        <span class="course-tag ${c.sync_status==='offline'?'tag-offline':'tag-syncing'}">${c.sync_status.toUpperCase()}</span>
+      </div>
+      <div class="course-body">
+        <div class="course-title">${c.title}</div>
+        <div class="course-meta">🕐 ${c.duration_hrs}h · ${c.total_modules} Topics · DTN Synced</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${c.progress_pct||0}%"></div></div>
+        <div class="progress-label"><span>${c.progress_pct||0}% complete</span><span>${c.completed_topics||0}/${c.total_modules} done</span></div>
+        ${showOpenBtn ? `<button class="course-open-btn" onclick="event.stopPropagation();openCourseDetail(${c.id})">📖 Open Course →</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function renderSyncRows(courses) {
+  document.getElementById('syncRows').innerHTML = courses.map(c => `
+    <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:8px;background:${c.sync_status==='offline'?'rgba(0,212,170,.15)':'rgba(255,159,67,.15)'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${c.sync_status==='offline'?'✅':'⏳'}</div>
+      <div style="flex:1;font-size:.85rem;">
+        <div style="font-weight:600;">${c.title}</div>
+        <div style="font-size:.72rem;color:var(--muted);">${c.sync_status==='offline'?'Synced · Offline-ready':'Syncing via adaptive DTN node…'}</div>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:.85rem;color:${c.sync_status==='offline'?'var(--accent)':'var(--warning)'};">${c.sync_status==='offline'?'100%':Math.floor(40+Math.random()*50)+'%'}</div>
+    </div>`).join('');
+}
+
+function renderSkills(courses) {
+  const colors = ['#00d4aa','#ff6b35','#7c5cbf','#00d4aa','#ff9f43','#00cec9'];
+  document.getElementById('skillsGrid').innerHTML = courses.map((c,i) => {
+    const pct = c.progress_pct || 0;
+    const r   = 24;
+    const circ = 2 * Math.PI * r;
+    const offset = circ - (pct / 100) * circ;
+    const levels = ['Beginner','Beginner+','Intermediate','Intermediate+','Advanced','Expert'];
+    const lvl = levels[Math.floor(pct/20)] || 'Beginner';
+    return `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:.4rem;">${c.icon}</div>
+        <div style="font-size:.78rem;font-weight:700;margin-bottom:.5rem;">${c.title.split(' ').slice(0,2).join(' ')}</div>
+        <div style="width:60px;height:60px;margin:.3rem auto;position:relative;">
+          <svg width="60" height="60" viewBox="0 0 60 60" style="transform:rotate(-90deg)">
+            <circle cx="30" cy="30" r="${r}" fill="none" stroke="var(--border)" stroke-width="6"/>
+            <circle cx="30" cy="30" r="${r}" fill="none" stroke="${colors[i%6]}" stroke-width="6"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;font-family:'Space Mono',monospace;">${pct}%</div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);">${lvl}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+//  COURSE DETAIL
+// ══════════════════════════════════════════════════
+async function openCourseDetail(courseId) {
+  showPanel('courses', document.querySelectorAll('.nav-item')[1]);
+  document.getElementById('coursesListView').style.display = 'none';
+  document.getElementById('courseDetailView').classList.add('active');
+  document.getElementById('courseHero').innerHTML = '<div class="loading-block"><div class="spinner"></div><div>Loading course…</div></div>';
+  document.getElementById('topicsContainer').innerHTML = '<div class="loading-block"><div class="spinner"></div><div>Loading topics…</div></div>';
+  try {
+    // Fetch course + topics + each topic status from MySQL
+    const res = await api('/courses/' + courseId);
+    currentCourse = res.data;
+    currentTopics = res.data.topics || [];
+  } catch(e) {
+    // Fallback to demo data if backend offline
+    currentCourse = allCourses.find(c => c.id === courseId) || allCourses[0];
+    currentTopics = getDemoTopics(courseId);
+  }
+  renderCourseHero(currentCourse);
+  renderTopics(currentTopics, currentCourse);
+}
+
+function renderCourseHero(course) {
+  document.getElementById('courseHero').innerHTML = `
+    <div class="course-hero-icon">${course.icon || '📚'}</div>
+    <div class="course-hero-info" style="flex:1;">
+      <h2>${course.title}</h2>
+      <p>${course.description || ''}</p>
+      <div class="course-hero-meta">
+        <div class="meta-pill">⏱ <span>${course.duration_hrs}h</span> total</div>
+        <div class="meta-pill">📖 <span>${course.total_modules || (course.topics||[]).length}</span> topics</div>
+        <div class="meta-pill">🔄 <span>${course.sync_status || 'offline'}</span></div>
+        <div class="meta-pill">📶 <span>DTN Ready</span></div>
+      </div>
+      <div class="course-hero-progress" style="max-width:400px;margin-top:.8rem;">
+        <div class="hero-pct"><span>${course.progress_pct||0}% complete</span><span>${course.completed_topics||0} / ${course.total_modules||6} topics</span></div>
+        <div class="hero-bar"><div class="hero-fill" style="width:${course.progress_pct||0}%"></div></div>
+      </div>
+    </div>`;
+}
+
+function renderTopics(topics, course) {
+  document.getElementById('topicsProgress').textContent =
+    `${topics.filter(t=>t.status==='completed').length} / ${topics.length} completed`;
+
+  document.getElementById('topicsContainer').innerHTML = topics.map((t, idx) => {
+    const statusClass = t.status==='completed' ? 'done' : t.status==='in_progress' ? 'inprog' : '';
+    const statusIcon  = t.status==='completed' ? '✅' : t.status==='in_progress' ? '🔄' : '⭕';
+    const typeClass   = `type-${t.topic_type || 'reading'}`;
+    return `
+      <div class="topic-row" onclick="openTopic(${idx})">
+        <div class="topic-num ${statusClass}">${idx+1}</div>
+        <div class="topic-info">
+          <div class="topic-title">${t.title}</div>
+          <div class="topic-desc">${t.description || ''}</div>
+        </div>
+        <div class="topic-right">
+          ${t.is_free ? '<span class="free-badge">FREE</span>' : ''}
+          <span class="topic-type-badge ${typeClass}">${(t.topic_type||'reading').toUpperCase()}</span>
+          <span class="topic-duration">⏱ ${t.duration_min||30}min</span>
+          <span class="topic-status-icon">${statusIcon}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function closeCourseDetail() {
+  document.getElementById('coursesListView').style.display = 'block';
+  document.getElementById('courseDetailView').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════
+//  TOPIC READER MODAL
+// ══════════════════════════════════════════════════
+async function openTopic(idx) {
+  currentTopicIdx = idx;
+  const t = currentTopics[idx];
+  document.getElementById('topicModal').classList.add('open');
+  document.getElementById('modalTitle').textContent = t.title;
+  document.getElementById('modalMeta').textContent  = `${(t.topic_type||'reading').toUpperCase()} · ${t.duration_min||30} min`;
+  document.getElementById('modalFooterLeft').textContent = `Topic ${idx+1} of ${currentTopics.length}`;
+  document.getElementById('modalProgressFill').style.width = `${((idx+1)/currentTopics.length)*100}%`;
+
+  const btnComplete = document.getElementById('btnComplete');
+  btnComplete.disabled = t.status === 'completed';
+  btnComplete.textContent = t.status === 'completed' ? '✅ Completed' : '✓ Mark Complete';
+
+  document.getElementById('btnPrev').style.visibility = idx === 0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').style.visibility = idx === currentTopics.length-1 ? 'hidden' : 'visible';
+
+  // Load content directly from built-in data — no backend needed
+  const content = t.content || `<h2>${t.title}</h2><p>${t.description || ''}</p><p style="color:var(--muted);margin-top:1rem;">Content is built into the platform and available offline.</p>`;
+  document.getElementById('modalBody').innerHTML = content;
+  document.getElementById('modalBody').scrollTop = 0;
+}
+
+function closeModal() {
+  document.getElementById('topicModal').classList.remove('open');
+}
+
+function navigateTopic(dir) {
+  const newIdx = currentTopicIdx + dir;
+  if (newIdx >= 0 && newIdx < currentTopics.length) openTopic(newIdx);
+}
+
+async function markComplete() {
+  const t   = currentTopics[currentTopicIdx];
+  const btn = document.getElementById('btnComplete');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+  try {
+    // Save to MySQL database via backend
+    const res = await api('/topics/' + t.id + '/complete', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    // Update local state from DB response
+    currentTopics[currentTopicIdx].status = 'completed';
+    const doneCount = res.data.completed_topics;
+    currentCourse.completed_topics = doneCount;
+    currentCourse.progress_pct     = res.data.progress_pct;
+
+    btn.textContent = '✅ Completed';
+    showToast('✅ Saved to database!');
+    renderTopics(currentTopics, currentCourse);
+    renderCourseHero(currentCourse);
+    document.getElementById('topicsProgress').textContent =
+      doneCount + ' / ' + currentTopics.length + ' completed';
+
+    // Certificate issued by backend
+    if (res.data.certificate_issued) {
+      setTimeout(() => {
+        document.getElementById('certMsg').textContent =
+          'You completed "' + currentCourse.title + '" and earned a certificate! 🎉';
+        document.getElementById('certOverlay').classList.add('open');
+      }, 600);
+    }
+    // Auto-advance
+    if (currentTopicIdx < currentTopics.length - 1) {
+      setTimeout(() => navigateTopic(1), 1000);
+    }
+  } catch(e) {
+    // Offline fallback: save locally
+    currentTopics[currentTopicIdx].status = 'completed';
+    const doneCount = currentTopics.filter(x => x.status === 'completed').length;
+    currentCourse.completed_topics = doneCount;
+    currentCourse.progress_pct = Math.round(doneCount / currentTopics.length * 100);
+    btn.textContent = '✅ Completed';
+    showToast('✅ Completed (offline mode)');
+    renderTopics(currentTopics, currentCourse);
+    renderCourseHero(currentCourse);
+    document.getElementById('topicsProgress').textContent =
+      doneCount + ' / ' + currentTopics.length + ' completed';
+    if (doneCount === currentTopics.length) {
+      setTimeout(() => {
+        document.getElementById('certMsg').textContent =
+          'You completed "' + currentCourse.title + '"! 🎉';
+        document.getElementById('certOverlay').classList.add('open');
+      }, 600);
+    }
+    if (currentTopicIdx < currentTopics.length - 1) {
+      setTimeout(() => navigateTopic(1), 1000);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PANEL NAV
+// ══════════════════════════════════════════════════
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if (el) el.classList.add('active');
+  const titles={home:'Dashboard',courses:'My Courses',sync:'Sync & Connectivity',skills:'Skills Tracker',network:'DTN Network Map',workforce:'Workforce Jobs',profile:'My Profile'};
+  document.getElementById('panelTitle').textContent = titles[name] || name;
+  // Reset course detail when switching panels
+  if (name === 'courses') {
+    document.getElementById('coursesListView').style.display = 'block';
+    document.getElementById('courseDetailView').classList.remove('active');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  DEMO TOPICS (when backend offline)
+// ══════════════════════════════════════════════════
+function getDemoTopics(courseId) {
+  const topicSets = {
+    1:[{id:101,title:'Intro to Web Development',description:'HTTP, clients, servers, full-stack overview.',content:'<h2>Welcome to Full-Stack Web Development</h2><p>The web is built on three core technologies: <strong>HTML</strong> (structure), <strong>CSS</strong> (style), and <strong>JavaScript</strong> (behaviour). As a full-stack developer you master both the <em>frontend</em> and the <em>backend</em>.</p><h3>🌐 How the Web Works</h3><p>When you type a URL, your browser sends an <strong>HTTP request</strong> to a server. The server returns an <strong>HTTP response</strong>. This request-response cycle is the backbone of every website.</p><h3>📦 Full-Stack Overview</h3><ul><li><strong>Frontend:</strong> HTML, CSS, React</li><li><strong>Backend:</strong> Python Flask / Node.js</li><li><strong>Database:</strong> MySQL, MongoDB</li></ul>',duration_min:45,order_index:1,topic_type:'reading',is_free:true,status:'not_started'},
+     {id:102,title:'HTML5 & CSS3 Foundations',description:'Semantic HTML, Flexbox, Grid, responsive design.',content:'<h2>HTML5 & CSS3</h2><h3>🏗 Semantic Tags</h3><pre><code>&lt;header&gt;\n  &lt;nav&gt;Navigation&lt;/nav&gt;\n&lt;/header&gt;\n&lt;main&gt;\n  &lt;article&gt;Content&lt;/article&gt;\n&lt;/main&gt;</code></pre><h3>🎨 Flexbox</h3><pre><code>.container {\n  display: flex;\n  gap: 1rem;\n  justify-content: space-between;\n}</code></pre><h3>📐 CSS Grid</h3><pre><code>.grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 1.5rem;\n}</code></pre>',duration_min:60,order_index:2,topic_type:'reading',is_free:false,status:'not_started'},
+     {id:103,title:'JavaScript ES6+',description:'Arrow functions, async/await, DOM manipulation.',content:'<h2>Modern JavaScript</h2><pre><code>// Arrow functions\nconst greet = name => `Hello, ${name}!`;\n\n// Async/Await\nasync function fetchData() {\n  const res = await fetch("/api/courses");\n  const data = await res.json();\n  return data;\n}\n\n// Destructuring\nconst { name, email } = user;</code></pre>',duration_min:75,order_index:3,topic_type:'video',is_free:false,status:'not_started'},
+     {id:104,title:'React.js Components & Hooks',description:'useState, useEffect, React Router.',content:'<h2>React.js</h2><pre><code>import { useState, useEffect } from "react";\n\nfunction App() {\n  const [courses, setCourses] = useState([]);\n  useEffect(() => {\n    fetch("/api/courses")\n      .then(r => r.json())\n      .then(d => setCourses(d.data));\n  }, []);\n  return &lt;div&gt;{courses.map(c => &lt;h3&gt;{c.title}&lt;/h3&gt;)}&lt;/div&gt;;\n}</code></pre>',duration_min:90,order_index:4,topic_type:'video',is_free:false,status:'not_started'},
+     {id:105,title:'Python Flask REST API',description:'Build REST APIs, JWT auth, MySQL connection.',content:'<h2>Flask REST API</h2><pre><code>from flask import Flask, jsonify, request\nfrom flask_jwt_extended import jwt_required\n\napp = Flask(__name__)\n\n@app.route("/api/courses")\n@jwt_required()\ndef courses():\n    return jsonify({"courses": get_all_courses()})\n\nif __name__ == "__main__":\n    app.run(debug=True)</code></pre>',duration_min:80,order_index:5,topic_type:'reading',is_free:false,status:'not_started'},
+     {id:106,title:'Deployment & Final Project',description:'Docker, cloud deployment, capstone project.',content:'<h2>Deployment</h2><pre><code># Dockerfile\nFROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD ["gunicorn","-w","4","server:app"]</code></pre><h3>🎯 Capstone</h3><p>Build and deploy a complete LMS with auth, courses, and progress tracking. Submit your GitHub link.</p>',duration_min:120,order_index:6,topic_type:'assignment',is_free:false,status:'not_started'}],
+    2:[{id:201,title:'Digital Marketing Overview',description:'Channels, metrics, and strategy fundamentals.',content:'<h2>Digital Marketing Overview</h2><p>Digital marketing covers all online channels: SEO, PPC, Social Media, Email, and Content Marketing.</p><h3>📣 Core Channels</h3><ul><li><strong>SEO</strong> – organic search</li><li><strong>Google Ads</strong> – paid search</li><li><strong>Social Media</strong> – Instagram, LinkedIn</li><li><strong>Email Marketing</strong> – automation</li></ul>',duration_min:40,order_index:1,topic_type:'reading',is_free:true,status:'not_started'},
+     {id:202,title:'SEO Fundamentals',description:'On-page, off-page, keyword research.',content:'<h2>SEO</h2><h3>🔍 Keyword Research</h3><p>Use Google Keyword Planner to find high-volume, low-competition keywords.</p><h3>📄 On-Page SEO</h3><ul><li>Title tags (50-60 chars)</li><li>Meta descriptions (150-160 chars)</li><li>Header hierarchy H1→H2→H3</li><li>Alt text on images</li></ul>',duration_min:55,order_index:2,topic_type:'reading',is_free:false,status:'not_started'},
+     {id:203,title:'Google Ads & PPC',description:'Campaign setup, bidding, ad copy.',content:'<h2>Google Ads</h2><h3>🎯 Campaign Types</h3><ul><li>Search – text ads on Google</li><li>Display – banner ads</li><li>Shopping – product listings</li><li>Video – YouTube ads</li></ul><h3>💰 Bidding Strategies</h3><p>Target CPA, Target ROAS, Maximize Conversions.</p>',duration_min:60,order_index:3,topic_type:'video',is_free:false,status:'not_started'},
+     {id:204,title:'Social Media Marketing',description:'Instagram, LinkedIn, Facebook strategy.',content:'<h2>Social Media</h2><h3>📱 Platform Strategy</h3><ul><li>Instagram – visual, Reels, Stories</li><li>LinkedIn – B2B networking</li><li>Facebook – community, ads</li><li>YouTube – video content</li></ul>',duration_min:50,order_index:4,topic_type:'video',is_free:false,status:'not_started'},
+     {id:205,title:'Email Marketing & Automation',description:'List building, drip campaigns, metrics.',content:'<h2>Email Marketing</h2><h3>📧 List Building</h3><p>Lead magnets, pop-ups, landing pages.</p><h3>🤖 Automation Flows</h3><ul><li>Welcome sequence (3-5 emails)</li><li>Abandoned cart recovery</li><li>Re-engagement campaigns</li></ul>',duration_min:45,order_index:5,topic_type:'reading',is_free:false,status:'not_started'},
+     {id:206,title:'Analytics & Reporting',description:'GA4, data interpretation, reporting.',content:'<h2>Analytics</h2><h3>📈 Google Analytics 4</h3><p>Event-based analytics. Track sessions, conversions, and user journeys.</p><h3>📊 Key Reports</h3><ul><li>Acquisition – traffic sources</li><li>Engagement – user behaviour</li><li>Monetisation – revenue</li></ul>',duration_min:50,order_index:6,topic_type:'assignment',is_free:false,status:'not_started'}],
+  };
+  const defaults = Array.from({length:6},(_,i)=>({
+    id:courseId*100+i+1,title:`Topic ${i+1}`,description:`Module ${i+1} of the course.`,
+    content:`<h2>Topic ${i+1}</h2><p>Connect to the backend to load full content.</p>`,
+    duration_min:45,order_index:i+1,topic_type:['reading','video','quiz','assignment'][i%4],
+    is_free:i===0,status:'not_started'
+  }));
+  return topicSets[courseId] || defaults;
+}
+
+// ══════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function timeSince(dateStr) {
+  const d = new Date(dateStr);
+  const diff = (Date.now() - d) / 1000;
+  if (diff < 60)   return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+// Close modal on overlay click
+document.getElementById('topicModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
